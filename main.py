@@ -23,11 +23,11 @@ class Singleton(type):
 
 
 def synchronized(wrapped):
-    lock = threading.Lock()
+    __lock = threading.Lock()
 
     @functools.wraps(wrapped)
     def _wrap(*args, **kwargs):
-        with lock:
+        with __lock:
             return wrapped(*args, **kwargs)
 
     return _wrap
