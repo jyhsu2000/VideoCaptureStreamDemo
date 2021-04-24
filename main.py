@@ -37,20 +37,27 @@ class Camera(metaclass=Singleton):
     camera = None
 
     def __init__(self):
-        global camera_url
-        self.camera = cv2.VideoCapture(camera_url)
-        print('Create VideoCapture')
-        fps = self.camera.get(cv2.CAP_PROP_FPS)
-        print(f'FPS: {fps}')
+        self.connect()
 
     @synchronized
     def read(self):
         return self.camera.read()
 
     @synchronized
+    def connect(self):
+        global camera_url
+        self.camera = cv2.VideoCapture(camera_url)
+        print('VideoCapture created')
+        width = self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)
+        height = self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        fps = self.camera.get(cv2.CAP_PROP_FPS)
+        print(f'Resolution: {width} * {height}')
+        print(f'FPS: {fps}')
+
+    @synchronized
     def reconnect(self):
         self.camera.release()
-        self.camera = cv2.VideoCapture(camera_url)
+        self.connect()
 
 
 def resize_image(img, limit_width, limit_height):
