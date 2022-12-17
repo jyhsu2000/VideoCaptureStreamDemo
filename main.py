@@ -1,9 +1,11 @@
 import threading
 import time
 from collections import deque
-from tkinter import *
+from tkinter import Tk, Label, TclError
+from tkinter.constants import BOTH, YES
 
 import cv2
+import numpy as np
 from PIL import ImageTk, Image
 
 from config import CAMERA_URL
@@ -20,7 +22,7 @@ class Camera(metaclass=Singleton):
         self.connect()
 
     @synchronized
-    def read(self):
+    def read(self) -> tuple[bool, np.ndarray]:
         # Capture frame-by-frame
 
         ret, frame = self.camera.read()
@@ -49,7 +51,7 @@ class Camera(metaclass=Singleton):
         return ret, frame
 
     @synchronized
-    def connect(self):
+    def connect(self) -> None:
         self.camera = cv2.VideoCapture(CAMERA_URL)
         print('VideoCapture created')
 
@@ -65,7 +67,7 @@ class Camera(metaclass=Singleton):
         print(f'FPS: {fps}')
 
     @synchronized
-    def reconnect(self):
+    def reconnect(self) -> None:
         self.camera.release()
         self.connect()
 
@@ -75,7 +77,7 @@ class Camera(metaclass=Singleton):
         self.camera.release()
 
 
-def resize_image(img, limit_width, limit_height):
+def resize_image(img: np.ndarray, limit_width: int, limit_height: int) -> np.ndarray:
     if limit_width <= 0:
         limit_width = 20
     if limit_height <= 0:
@@ -100,7 +102,7 @@ class ClientApp:
 
         self.video_looper = self.VideoLooper(app=self)
 
-    def run(self):
+    def run(self) -> None:
         self.main_window.mainloop()
 
     def stop(self) -> None:
@@ -115,7 +117,7 @@ class ClientApp:
         is_running: bool = False
         camera = None
 
-        def __init__(self, app):
+        def __init__(self, app: 'ClientApp'):
             self.is_running = True
             threading.Thread.__init__(self)
             self.app = app
@@ -123,13 +125,13 @@ class ClientApp:
             self.camera = Camera()
             self.start()
 
-        def run(self):
+        def run(self) -> None:
             if not self.is_running:
                 return
             self.video_loop()
             threading.Timer(0, self.run).start()
 
-        def video_loop(self):
+        def video_loop(self) -> None:
             preview_label = self.app.preview_label
             ret, img = self.camera.read()
             if not ret and self.is_running:

@@ -1,5 +1,6 @@
 import functools
 import threading
+from typing import Callable, Any
 
 
 class Singleton(type):
@@ -14,11 +15,11 @@ class Singleton(type):
         return cls.__instances[cls]
 
 
-def synchronized(wrapped):
+def synchronized(wrapped: Callable) -> Callable:
     __lock = threading.Lock()
 
     @functools.wraps(wrapped)
-    def _wrap(*args, **kwargs):
+    def _wrap(*args, **kwargs) -> Any:
         with __lock:
             return wrapped(*args, **kwargs)
 
