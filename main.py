@@ -16,7 +16,8 @@ class Camera(metaclass=Singleton):
     camera = None
     prev_frame_time = 0
     recent_frame_count = 10
-    recent_frame_time = deque([0], maxlen=recent_frame_count)
+    recent_frame_time = deque([0.0], maxlen=recent_frame_count)
+    fps = 0
 
     def __init__(self):
         self.connect()
@@ -31,22 +32,17 @@ class Camera(metaclass=Singleton):
         if not ret:
             return ret, frame
 
-        # font which we will be using to display FPS
-        font = cv2.FONT_HERSHEY_SIMPLEX
         # time when we finish processing for this frame
-        new_frame_time = time.time()
+        new_frame_time = time.perf_counter()
 
         # Calculating the fps
 
         # fps will be number of frame processed in given time frame
         # since their will be most of time error of 0.001 second
         # we will be subtracting it to get more accurate result
-        fps = 1 / ((new_frame_time - self.recent_frame_time[0]) / self.recent_frame_count)
+        self.fps = 1 / ((new_frame_time - self.recent_frame_time[0]) / self.recent_frame_count)
         self.recent_frame_time.append(new_frame_time)
         self.prev_frame_time = new_frame_time
-
-        # putting the FPS count on the frame
-        cv2.putText(frame, f'{fps:.2f}', (7, 70), font, 3, (100, 255, 0), 3, cv2.LINE_AA)
 
         return ret, frame
 
@@ -132,6 +128,8 @@ class ClientApp:
                 preview_label.config(image='', text='Disconnected. Trying to reconnect...')
                 self.camera.reconnect()
                 return
+
+            self.app.status_text.set(f'FPS: {self.camera.fps:.2f}')
 
             limit_width = preview_label.winfo_width()
             limit_height = preview_label.winfo_height()
