@@ -1,4 +1,3 @@
-import os
 import threading
 import time
 from collections import deque
@@ -70,6 +69,11 @@ class Camera(metaclass=Singleton):
         self.camera.release()
         self.connect()
 
+    @synchronized
+    def release(self) -> None:
+        print('Camera releasing...')
+        self.camera.release()
+
 
 def resize_image(img, limit_width, limit_height):
     if limit_width <= 0:
@@ -89,20 +93,30 @@ class ClientApp:
         self.main_window = Tk()
         self.main_window.title('VideoCaptureStreamDemo')
         self.main_window.geometry('800x600')
-        self.main_window.protocol('WM_DELETE_WINDOW', lambda: os._exit(0))
+        self.main_window.protocol('WM_DELETE_WINDOW', lambda: self.main_window.destroy())
 
         self.preview_label = Label(text='Starting...')
         self.preview_label.pack(fill=BOTH, expand=YES)
 
-        self.VideoLooper(app=self)
+        self.video_looper = self.VideoLooper(app=self)
 
     def run(self):
         self.main_window.mainloop()
 
+    def stop(self) -> None:
+        self.video_looper.stop()
+        # 正常離開時，已 destroy，若再次呼叫，會拋出 TclError: can't invoke "destroy" command: application has been destroyed，故以 try...except 的方式忽略
+        try:
+            self.main_window.destroy()
+        except TclError:
+            pass
+
     class VideoLooper(threading.Thread):
+        is_running: bool = False
         camera = None
 
         def __init__(self, app):
+            self.is_running = True
             threading.Thread.__init__(self)
             self.app = app
             self.daemon = True
@@ -110,16 +124,17 @@ class ClientApp:
             self.start()
 
         def run(self):
+            if not self.is_running:
+                return
             self.video_loop()
             threading.Timer(0, self.run).start()
 
         def video_loop(self):
             preview_label = self.app.preview_label
             ret, img = self.camera.read()
-            if not ret:
+            if not ret and self.is_running:
                 preview_label.img_tk = None
-                preview_label.config(
-                    image='', text='Disconnected. Trying to reconnect...')
+                preview_label.config(image='', text='Disconnected. Trying to reconnect...')
                 self.camera.reconnect()
                 return
 
@@ -134,7 +149,18 @@ class ClientApp:
             preview_label.config(image=img_tk)
             preview_label.img_tk = img_tk
 
+        def stop(self) -> None:
+            self.is_running = False
+            self.camera.release()
+            self.join()
+            print('CameraLooper stopped')
+
 
 if __name__ == "__main__":
     app = ClientApp()
-    app.run()
+    try:
+        app.run()
+    except KeyboardInterrupt:
+        print('KeyboardInterrupt detected, exiting...')
+    finally:
+        app.stop()
