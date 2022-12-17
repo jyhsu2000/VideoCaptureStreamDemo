@@ -8,7 +8,7 @@ from tkinter import *
 import cv2
 from PIL import ImageTk, Image
 
-camera_url = 'http://127.0.0.1:56000/mjpeg'
+from config import CAMERA_URL
 
 
 class Singleton(type):
@@ -75,8 +75,7 @@ class Camera(metaclass=Singleton):
 
     @synchronized
     def connect(self):
-        global camera_url
-        self.camera = cv2.VideoCapture(camera_url)
+        self.camera = cv2.VideoCapture(CAMERA_URL)
         print('VideoCapture created')
 
         # self.camera.set(cv2.CAP_PROP_SETTINGS, 1)
