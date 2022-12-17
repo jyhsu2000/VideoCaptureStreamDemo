@@ -3,10 +3,8 @@ import numpy as np
 
 
 def resize_image(img: np.ndarray, limit_width: int, limit_height: int) -> np.ndarray:
-    if limit_width <= 0:
-        limit_width = 20
-    if limit_height <= 0:
-        limit_height = 20
+    if limit_width <= 0 or limit_height <= 0:
+        return img
     height, width = img.shape[:2]
     if limit_width / width < 1 or limit_height / height < 1:
         ratio = min(limit_width / width, limit_height / height)
