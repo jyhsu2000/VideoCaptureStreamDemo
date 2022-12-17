@@ -1,0 +1,4 @@
+[flake8]
+extend-ignore = ANN002,ANN003,ANN101,ANN102,ANN204
+exclude = .git, venv
+max_line_length = 250
