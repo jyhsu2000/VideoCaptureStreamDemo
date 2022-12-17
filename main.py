@@ -1,8 +1,7 @@
 import threading
 import time
+import tkinter as tk
 from collections import deque
-from tkinter import Tk, Label, TclError
-from tkinter.constants import BOTH, YES
 
 import cv2
 import numpy as np
@@ -80,13 +79,13 @@ class Camera(metaclass=Singleton):
 
 class ClientApp:
     def __init__(self):
-        self.main_window = Tk()
+        self.main_window = tk.Tk()
         self.main_window.title('VideoCaptureStreamDemo')
         self.main_window.geometry('800x600')
         self.main_window.protocol('WM_DELETE_WINDOW', lambda: self.main_window.destroy())
 
-        self.preview_label = Label(text='Starting...')
-        self.preview_label.pack(fill=BOTH, expand=YES)
+        self.preview_label = tk.Label(text='Starting...')
+        self.preview_label.pack(fill=tk.BOTH, expand=tk.YES)
 
         self.video_looper = self.VideoLooper(app=self)
 
@@ -98,7 +97,7 @@ class ClientApp:
         # 正常離開時，已 destroy，若再次呼叫，會拋出 TclError: can't invoke "destroy" command: application has been destroyed，故以 try...except 的方式忽略
         try:
             self.main_window.destroy()
-        except TclError:
+        except tk.TclError:
             pass
 
     class VideoLooper(threading.Thread):
