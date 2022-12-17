@@ -84,8 +84,14 @@ class ClientApp:
         self.main_window.geometry('800x600')
         self.main_window.protocol('WM_DELETE_WINDOW', lambda: self.main_window.destroy())
 
+        # 狀態列
+        self.status_text = tk.StringVar()
+        self.status_text.set('Ready')
+        status_bar = tk.Label(self.main_window, textvariable=self.status_text, relief=tk.SUNKEN, anchor='w', width=1)
+        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
         self.preview_label = tk.Label(text='Starting...')
-        self.preview_label.pack(fill=tk.BOTH, expand=tk.YES)
+        self.preview_label.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
 
         self.video_looper = self.VideoLooper(app=self)
 
