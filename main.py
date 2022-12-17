@@ -103,11 +103,10 @@ class ClientApp:
             pass
 
     class VideoLooper(threading.Thread):
-        is_running: bool = False
+        stop_event = threading.Event()
         camera = None
 
         def __init__(self, app: 'ClientApp'):
-            self.is_running = True
             threading.Thread.__init__(self)
             self.app = app
             self.daemon = True
@@ -115,7 +114,7 @@ class ClientApp:
             self.start()
 
         def run(self) -> None:
-            if not self.is_running:
+            if self.stop_event.is_set():
                 return
             self.video_loop()
             threading.Timer(0, self.run).start()
@@ -123,7 +122,7 @@ class ClientApp:
         def video_loop(self) -> None:
             preview_label = self.app.preview_label
             ret, img = self.camera.read()
-            if not ret and self.is_running:
+            if not ret and not self.stop_event.is_set():
                 preview_label.img_tk = None
                 preview_label.config(image='', text='Disconnected. Trying to reconnect...')
                 self.camera.reconnect()
@@ -143,7 +142,7 @@ class ClientApp:
             preview_label.img_tk = img_tk
 
         def stop(self) -> None:
-            self.is_running = False
+            self.stop_event.set()
             self.camera.release()
             self.join()
             print('CameraLooper stopped')
