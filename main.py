@@ -10,6 +10,7 @@ from PIL import ImageTk, Image
 
 from config import CAMERA_URL
 from utils.common import Singleton, synchronized
+from utils.image import resize_image
 
 
 class Camera(metaclass=Singleton):
@@ -75,19 +76,6 @@ class Camera(metaclass=Singleton):
     def release(self) -> None:
         print('Camera releasing...')
         self.camera.release()
-
-
-def resize_image(img: np.ndarray, limit_width: int, limit_height: int) -> np.ndarray:
-    if limit_width <= 0:
-        limit_width = 20
-    if limit_height <= 0:
-        limit_height = 20
-    height, width = img.shape[:2]
-    if limit_width / width < 1 or limit_height / height < 1:
-        ratio = min(limit_width / width, limit_height / height)
-        width, height = max(int(width * ratio), 1), max(int(height * ratio), 1)
-        img = cv2.resize(img, (width, height))
-    return img
 
 
 class ClientApp:
