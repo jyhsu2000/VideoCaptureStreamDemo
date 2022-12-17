@@ -1,6 +1,8 @@
 import functools
 import os
 import threading
+import time
+from collections import deque
 from tkinter import *
 
 import cv2
@@ -35,19 +37,53 @@ def synchronized(wrapped):
 
 class Camera(metaclass=Singleton):
     camera = None
+    prev_frame_time = 0
+    recent_frame_count = 10
+    recent_frame_time = deque([0], maxlen=recent_frame_count)
 
     def __init__(self):
         self.connect()
 
     @synchronized
     def read(self):
-        return self.camera.read()
+        # Capture frame-by-frame
+
+        ret, frame = self.camera.read()
+
+        # if video finished or no Video Input
+        if not ret:
+            return ret, frame
+
+        # font which we will be using to display FPS
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        # time when we finish processing for this frame
+        new_frame_time = time.time()
+
+        # Calculating the fps
+
+        # fps will be number of frame processed in given time frame
+        # since their will be most of time error of 0.001 second
+        # we will be subtracting it to get more accurate result
+        fps = 1 / ((new_frame_time - self.recent_frame_time[0]) / self.recent_frame_count)
+        self.recent_frame_time.append(new_frame_time)
+        self.prev_frame_time = new_frame_time
+
+        # putting the FPS count on the frame
+        cv2.putText(frame, f'{fps:.2f}', (7, 70), font, 3, (100, 255, 0), 3, cv2.LINE_AA)
+
+        return ret, frame
 
     @synchronized
     def connect(self):
         global camera_url
         self.camera = cv2.VideoCapture(camera_url)
         print('VideoCapture created')
+
+        # self.camera.set(cv2.CAP_PROP_SETTINGS, 1)
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 3840)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 2160)
+        self.camera.set(cv2.CAP_PROP_FPS, 60)
+
         width = self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)
         height = self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)
         fps = self.camera.get(cv2.CAP_PROP_FPS)
