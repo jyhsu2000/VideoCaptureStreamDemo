@@ -56,6 +56,10 @@ class Camera(metaclass=Singleton):
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 2160)
         self.camera.set(cv2.CAP_PROP_FPS, 60)
 
+        # self.camera.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+        # self.camera.set(cv2.CAP_PROP_FOCUS, 255)
+        print(f'{ self.camera.get(cv2.CAP_PROP_FOCUS)=}')
+
         width = self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)
         height = self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)
         fps = self.camera.get(cv2.CAP_PROP_FPS)
@@ -83,8 +87,17 @@ class ClientApp:
         # 狀態列
         self.status_text = tk.StringVar()
         self.status_text.set('Ready')
-        status_bar = tk.Label(self.main_window, textvariable=self.status_text, relief=tk.SUNKEN, anchor='w', width=1)
+        status_bar = tk.Label(self.main_window, textvariable=self.status_text, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        button_frame = tk.Frame(self.main_window)
+        button_frame.pack(side=tk.BOTTOM, fill=tk.X)
+
+        toggle_auto_focus_on_button = tk.Button(button_frame, text='Auto Focus ON', command=self.toggle_auto_focus_on)
+        toggle_auto_focus_on_button.pack(side=tk.LEFT)
+
+        toggle_auto_focus_off_button = tk.Button(button_frame, text='Auto Focus OFF', command=self.toggle_auto_focus_off)
+        toggle_auto_focus_off_button.pack(side=tk.LEFT)
 
         self.preview_label = tk.Label(text='Starting...')
         self.preview_label.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
@@ -101,6 +114,26 @@ class ClientApp:
             self.main_window.destroy()
         except tk.TclError:
             pass
+
+    def toggle_auto_focus_on(self):
+        print('toggle_auto_focus_on')
+        auto_focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_AUTOFOCUS)
+        focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_FOCUS)
+        print(f'{auto_focus=} {focus=}')
+        self.video_looper.camera.camera.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+        auto_focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_AUTOFOCUS)
+        focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_FOCUS)
+        print(f'{auto_focus=} {focus=}')
+
+    def toggle_auto_focus_off(self):
+        print('toggle_auto_focus_off')
+        auto_focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_AUTOFOCUS)
+        focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_FOCUS)
+        print(f'{auto_focus=} {focus=}')
+        self.video_looper.camera.camera.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+        auto_focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_AUTOFOCUS)
+        focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_FOCUS)
+        print(f'{auto_focus=} {focus=}')
 
     class VideoLooper(threading.Thread):
         stop_event = threading.Event()
