@@ -58,6 +58,7 @@ class Camera(metaclass=Singleton):
 
         # self.camera.set(cv2.CAP_PROP_AUTOFOCUS, 0)
         # self.camera.set(cv2.CAP_PROP_FOCUS, 255)
+        print(f'{ self.camera.get(cv2.CAP_PROP_AUTOFOCUS)=}')
         print(f'{ self.camera.get(cv2.CAP_PROP_FOCUS)=}')
 
         width = self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)
