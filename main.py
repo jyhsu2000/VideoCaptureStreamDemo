@@ -55,6 +55,7 @@ class Camera(metaclass=Singleton):
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 3840)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 2160)
         self.camera.set(cv2.CAP_PROP_FPS, 60)
+        self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
 
         # self.camera.set(cv2.CAP_PROP_AUTOFOCUS, 0)
         # self.camera.set(cv2.CAP_PROP_FOCUS, 255)
