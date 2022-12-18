@@ -158,7 +158,7 @@ class ClientApp:
                 self.camera.reconnect()
                 return
 
-            self.app.status_text.set(f'FPS: {self.camera.fps:.2f}')
+            self.refresh_info()
 
             limit_width = preview_label.winfo_width()
             limit_height = preview_label.winfo_height()
@@ -170,6 +170,10 @@ class ClientApp:
             img_tk = ImageTk.PhotoImage(image=current_image)
             preview_label.config(image=img_tk)
             preview_label.img_tk = img_tk
+
+        def refresh_info(self):
+            focus = self.camera.camera.get(cv2.CAP_PROP_FOCUS)
+            self.app.status_text.set(f'FPS: {self.camera.fps:.2f} focus: {focus}')
 
         def stop(self) -> None:
             self.stop_event.set()
