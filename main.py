@@ -77,12 +77,12 @@ class Camera(metaclass=Singleton):
         print('Camera releasing...')
         self.camera.release()
 
-    def supported_capture_properties(self):
+    def supported_capture_properties(self) -> list:
         """
         List the properties supported by the capture device.
         """
         cap = self.camera
-        supported = list()
+        supported = []
         for attr in dir(cv2):
             if attr.startswith('CAP_PROP'):
                 if cap.get(getattr(cv2, attr)) != -1:
@@ -171,7 +171,7 @@ class ClientApp:
             preview_label.config(image=img_tk)
             preview_label.img_tk = img_tk
 
-        def refresh_info(self):
+        def refresh_info(self) -> None:
             self.app.status_text.set(f'FPS={self.camera.fps:.2f}')
 
             message = 'Supported properties:\n'
