@@ -82,7 +82,7 @@ class ClientApp:
         self.main_window = tk.Tk()
         self.main_window.title('VideoCaptureStreamDemo')
         self.main_window.geometry('800x600')
-        self.main_window.protocol('WM_DELETE_WINDOW', lambda: self.main_window.destroy())
+        self.main_window.protocol('WM_DELETE_WINDOW', self.stop)
 
         # 狀態列
         self.status_text = tk.StringVar()
@@ -109,11 +109,7 @@ class ClientApp:
 
     def stop(self) -> None:
         self.video_looper.stop()
-        # 正常離開時，已 destroy，若再次呼叫，會拋出 TclError: can't invoke "destroy" command: application has been destroyed，故以 try...except 的方式忽略
-        try:
-            self.main_window.destroy()
-        except tk.TclError:
-            pass
+        self.main_window.destroy()
 
     def toggle_auto_focus_on(self):
         print('toggle_auto_focus_on')
@@ -187,5 +183,4 @@ if __name__ == "__main__":
         app.run()
     except KeyboardInterrupt:
         print('KeyboardInterrupt detected, exiting...')
-    finally:
         app.stop()
