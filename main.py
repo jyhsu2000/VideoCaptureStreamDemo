@@ -78,6 +78,72 @@ class Camera(metaclass=Singleton):
         self.camera.release()
 
 
+class CustomControlPanelWidget:
+    app: 'ClientApp'
+    title: str
+    auto_prop: int | None
+    setting_prop: int
+
+    label_frame: tk.LabelFrame
+    label_string: tk.StringVar
+
+    def __init__(
+            self,
+            app: 'ClientApp',
+            master: tk.Widget,
+            title: str,
+            auto_prop: int | None,
+            setting_prop: int,
+            auto_on_value: float = 1,
+            auto_off_value: float = 0
+    ):
+        self.app = app
+        self.title = title
+        self.auto_prop = auto_prop
+        self.setting_prop = setting_prop
+
+        self.label_frame = tk.LabelFrame(master, text=self.title)
+        self.label_frame.pack(side=tk.TOP, fill=tk.X)
+
+        self.label_string = tk.StringVar()
+        self.label_string.set('Auto: ON\nFocus: 999')
+        label = tk.Label(self.label_frame, textvariable=self.label_string)
+        label.pack(side=tk.TOP)
+
+        button_frame = tk.Frame(self.label_frame)
+        button_frame.pack(side=tk.TOP)
+        button_frame.grid_columnconfigure(0, weight=1, uniform='col')
+        button_frame.grid_columnconfigure(1, weight=1, uniform='col')
+
+        if self.auto_prop:
+            auto_on_button = tk.Button(button_frame, text=f'Auto ON ({auto_on_value})', command=lambda: self.set_value(self.auto_prop, auto_on_value))
+            auto_on_button.grid(row=0, column=0, sticky=tk.NSEW)
+
+            auto_off_button = tk.Button(button_frame, text=f'Auto OFF ({auto_off_value})', command=lambda: self.set_value(self.auto_prop, auto_off_value))
+            auto_off_button.grid(row=0, column=1, sticky=tk.NSEW)
+
+        self.input_field = tk.Entry(button_frame)
+        self.input_field.grid(row=1, column=0, sticky=tk.NSEW)
+
+        set_button = tk.Button(button_frame, text='-> Set', command=lambda: self.set_value(self.setting_prop, self.input_field.get()))
+        set_button.grid(row=1, column=1, sticky=tk.NSEW)
+
+    def set_value(self, prop, value):
+        print(f'{prop=}')
+        print(f'{value=}')
+        self.camera.set(prop, float(value))
+        self.refresh_info()
+
+    def refresh_info(self):
+        auto = self.camera.get(self.auto_prop)
+        setting = self.camera.get(self.setting_prop)
+        self.label_string.set(f'Auto: {auto}\nSetting: {setting}')
+
+    @property
+    def camera(self) -> cv2.VideoCapture:
+        return self.app.video_looper.camera.camera
+
+
 class ClientApp:
     def __init__(self):
         self.main_window = tk.Tk()
@@ -99,6 +165,41 @@ class ClientApp:
 
         toggle_auto_focus_off_button = tk.Button(button_frame, text='Auto Focus OFF', command=self.toggle_auto_focus_off)
         toggle_auto_focus_off_button.pack(side=tk.LEFT)
+
+        # 控制面板
+        control_frame = tk.Frame(self.main_window)
+        control_frame.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.control_widgets = {
+            'focus': CustomControlPanelWidget(
+                app=self,
+                master=control_frame,
+                title='Focus',
+                auto_prop=cv2.CAP_PROP_AUTOFOCUS,
+                setting_prop=cv2.CAP_PROP_FOCUS
+            ),
+            'exposure': CustomControlPanelWidget(
+                app=self,
+                master=control_frame,
+                title='Exposure',
+                auto_prop=cv2.CAP_PROP_AUTO_EXPOSURE,
+                setting_prop=cv2.CAP_PROP_EXPOSURE
+            ),
+            'white balance': CustomControlPanelWidget(
+                app=self,
+                master=control_frame,
+                title='White Balance',
+                auto_prop=cv2.CAP_PROP_AUTO_WB,
+                setting_prop=cv2.CAP_PROP_WB_TEMPERATURE
+            ),
+            'brightness': CustomControlPanelWidget(
+                app=self,
+                master=control_frame,
+                title='Brightness',
+                auto_prop=None,
+                setting_prop=cv2.CAP_PROP_BRIGHTNESS
+            ),
+        }
 
         self.preview_label = tk.Label(text='Starting...')
         self.preview_label.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
@@ -174,6 +275,8 @@ class ClientApp:
         def refresh_info(self):
             focus = self.camera.camera.get(cv2.CAP_PROP_FOCUS)
             self.app.status_text.set(f'FPS: {self.camera.fps:.2f} focus: {focus}')
+            for name, widget in self.app.control_widgets.items():
+                widget.refresh_info()
 
         def stop(self) -> None:
             self.stop_event.set()
