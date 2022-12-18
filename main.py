@@ -48,7 +48,7 @@ class Camera(metaclass=Singleton):
 
     @synchronized
     def connect(self) -> None:
-        self.camera = cv2.VideoCapture(CAMERA_URL)
+        self.camera = cv2.VideoCapture(CAMERA_URL, cv2.CAP_DSHOW)
         print('VideoCapture created')
 
         # self.camera.set(cv2.CAP_PROP_SETTINGS, 1)
