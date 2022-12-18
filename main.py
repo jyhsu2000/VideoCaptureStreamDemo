@@ -111,7 +111,7 @@ class ClientApp:
         self.video_looper.stop()
         self.main_window.destroy()
 
-    def toggle_auto_focus_on(self):
+    def toggle_auto_focus_on(self) -> None:
         print('toggle_auto_focus_on')
         auto_focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_AUTOFOCUS)
         focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_FOCUS)
@@ -121,7 +121,7 @@ class ClientApp:
         focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_FOCUS)
         print(f'{auto_focus=} {focus=}')
 
-    def toggle_auto_focus_off(self):
+    def toggle_auto_focus_off(self) -> None:
         print('toggle_auto_focus_off')
         auto_focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_AUTOFOCUS)
         focus = self.video_looper.camera.camera.get(cv2.CAP_PROP_FOCUS)
